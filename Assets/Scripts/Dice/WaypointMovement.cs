@@ -10,8 +10,11 @@ public class WaypointMovement : MonoBehaviour
     public RigidbodyController rbController;
     public float epsilonTarget;
     public List<Die> dies;
+    public bool isFirstRound = true;
+    public GameObject SalaryUI;
 
     private int waypointTargetIndex;
+    public Canvas investeren;
 
     private void Start()
     {
@@ -28,9 +31,52 @@ public class WaypointMovement : MonoBehaviour
         MoveTowardsWaypointTarget();
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(moveTo != 0)
+        transform.Rotate(Vector3.up * 2000);
+        if (collision.gameObject.CompareTag("StartingTile") && !isFirstRound)
+        {
+            SalaryUI.SetActive(true);
+
+            if(moveTo != 0)
+            isFirstRound = true;
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("StartingTile") && !isFirstRound)
+        {
+            isFirstRound = true;
+            StartCoroutine(SpawnInvesteren());
+        }
+    }
+
+    IEnumerator SpawnInvesteren()
+    {
+        yield return new WaitForSeconds(3f);
+
+        Instantiate(investeren); 
+    }
+
     public void setMoveto(int value)
     {
-        this.moveTo += value;
+
+        if(this.moveTo + value >= 27)
+        {
+            isFirstRound = false;
+            int temp = this.moveTo + value;
+            this.moveTo = (temp - 28);
+            if(this.moveTo <0)
+            {
+                this.moveTo = 0;
+            }
+        }
+        else
+        {
+            this.moveTo += value ;
+        }
     }
 
     private bool IsWaypointReached()

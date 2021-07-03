@@ -4,7 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum round { Player1, Player2, Player3, Player4 }
-public enum gameState { Start, ThrowingScreen, ThrowingAnimation, Walking, Choosing}
+public enum gameState { Setup ,Start, ThrowingScreen, ThrowingAnimation, Walking, Choosing, Winner}
+
+
 
 public class RoundManager : MonoBehaviour
 {
@@ -13,16 +15,24 @@ public class RoundManager : MonoBehaviour
     public DiceManager diceManager;
     public GameObject playerTurnUI;
     public Text playerRoundText;
-
+    public Text playerTurnText;
+    public GameObject WinnerUI;
+    public Player[] players;
+    public Text playerTurnRoundText;
+    
+    private int playerTurnRound;
     private round round;
-    private gameState gameState;
-
-    private bool gameDone = false;
+    public gameState gameState;
 
     private void Start()
     {
         round = round.Player1;
-        gameState = gameState.Start;
+        gameState = gameState.Setup;
+        foreach(Player p in players)
+        {
+            p.UpdatePlayerText();
+        }
+        playerTurnRound = 1;
     }
 
     void Update()
@@ -42,9 +52,19 @@ public class RoundManager : MonoBehaviour
             diceManager.Button.SetActive(false);
             playerTurnUI.SetActive(false);
         }
+        if (gameState == gameState.Winner)
+        {
+            WinnerUI.SetActive(true);
+            Time.timeScale = 0;
+        }
     }
 
-    public int getPlayerRound()
+    public int getThisPlayerMoney()
+    {
+        return players[getPlayerRound()].playerMoney;
+    }
+
+        public int getPlayerRound()
     {
         switch (round)
         {
@@ -57,8 +77,15 @@ public class RoundManager : MonoBehaviour
             case round.Player4:
                 return 3;
             default:
+                playerTurnRound += 1;
+                playerTurnRoundText.text = "Ronde: " + playerTurnRound;
                 return 0;
         }
+    }
+
+    public bool getPlayerAI()
+    {
+        return players[getPlayerRound()].isAI;
     }
 
     public void SetPlayerRound(int player)
@@ -68,22 +95,27 @@ public class RoundManager : MonoBehaviour
             case 0:
                 round = round.Player1;
                 playerRoundText.text = "Speler " + 1 + " is aan de beurt!";
+                playerTurnText.text = "Speler 1";
                 break;
             case 1:
                 round = round.Player2;
                 playerRoundText.text = "Speler " + 2 + " is aan de beurt!";
+                playerTurnText.text = "Speler 2";
                 break;
             case 2:
                 round = round.Player3;
                 playerRoundText.text = "Speler " + 3 + " is aan de beurt!";
+                playerTurnText.text = "Speler 3";
                 break;
             case 3:
                 round = round.Player4;
                 playerRoundText.text = "Speler " + 4 + " is aan de beurt!";
+                playerTurnText.text = "Speler 4";
                 break;
             default:
                 round = round.Player1;
                 playerRoundText.text = "Speler " + 1 + " is aan de beurt!";
+                playerTurnText.text = "Speler 1";
                 break;
         }
     }
@@ -100,6 +132,10 @@ public class RoundManager : MonoBehaviour
         gameState = gameState.ThrowingAnimation;
     }
     public void setGameStateWalking()
+    {
+        gameState = gameState.Walking;
+    }
+    public void setGameStateChoosing()
     {
         gameState = gameState.Walking;
     }
